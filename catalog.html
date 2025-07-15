@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" x-data="cartApp()" x-init="loadCart()">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -15,6 +15,8 @@
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   />
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-light">
   <!-- Header com menu hamburguer -->
@@ -76,10 +78,10 @@
     <section class="container mb-4" aria-label="Filtros do Catálogo">
       <div class="row justify-content-center">
         <div class="col-md-10">
-          <form class="row g-2" aria-label="Formulário de filtros">
+          <form class="row g-2" aria-label="Formulário de filtros" @change="tipoFilter = $event.target.form.tipo.value; paisFilter = $event.target.form.pais.value; precoFilter = $event.target.form.preco.value">
             <div class="col-sm-4">
               <label for="tipo" class="form-label visually-hidden">Tipo de Bebida</label>
-              <select class="form-select" name="tipo" id="tipo">
+              <select class="form-select" name="tipo" id="tipo" x-model="tipoFilter">
                 <option value="">Tipo de Bebida</option>
                 <option>Vinho</option>
                 <option>Whisky</option>
@@ -90,7 +92,7 @@
             </div>
             <div class="col-sm-4">
               <label for="pais" class="form-label visually-hidden">País de Origem</label>
-              <select class="form-select" name="pais" id="pais">
+              <select class="form-select" name="pais" id="pais" x-model="paisFilter">
                 <option value="">País de Origem</option>
                 <option>Argentina</option>
                 <option>Escócia</option>
@@ -101,7 +103,7 @@
             </div>
             <div class="col-sm-4">
               <label for="preco" class="form-label visually-hidden">Faixa de Preço</label>
-              <select class="form-select" name="preco" id="preco">
+              <select class="form-select" name="preco" id="preco" x-model="precoFilter">
                 <option value="">Faixa de Preço</option>
                 <option>Até R$ 50</option>
                 <option>R$ 51 a R$ 150</option>
@@ -113,38 +115,45 @@
         </div>
       </div>
     </section>
+
+    <!-- Produtos -->
     <section class="row g-4 justify-content-center" aria-label="Lista de produtos">
-      <!-- Exemplo de card de produto -->
-      <article class="col-12 col-sm-6 col-md-4 col-lg-3" role="article" aria-label="Produto Vinho Tinto Argentino">
-        <div class="card shadow h-100">
-          <img src="produtos/vinho1.jpg" class="card-img-top" alt="Vinho Tinto Argentino" loading="lazy" />
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title">Vinho Tinto Argentino</h5>
-            <p class="card-text mb-1">Malbec Reserva 750ml</p>
-            <p class="card-text text-muted mb-2"><i class="fa fa-globe" aria-hidden="true"></i> Argentina</p>
-            <p class="card-text fw-bold text-success mb-3">R$ 89,90</p>
-<a href="https://wa.me/SEUNUMERO?text=Tenho%20interesse%20no%20Vinho%20Tinto%20Argentino" target="_blank" rel="noopener" class="btn btn-success mt-auto" aria-label="Comprar Vinho Tinto Argentino pelo WhatsApp">
-              <i class="fab fa-whatsapp" aria-hidden="true"></i> Comprar pelo WhatsApp
-            </a>
+      <template x-for="product in filteredProducts()" :key="product.id">
+        <article class="col-12 col-sm-6 col-md-4 col-lg-3" role="article" :aria-label="'Produto ' + product.name">
+          <div class="card shadow h-100">
+            <img :src="product.image" class="card-img-top" :alt="product.alt" loading="lazy" />
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title" x-text="product.name"></h5>
+              <p class="card-text mb-1" x-text="product.description"></p>
+              <p class="card-text text-muted mb-2"><i class="fa fa-globe" aria-hidden="true"></i> <span x-text="product.origin"></span></p>
+              <p class="card-text fw-bold text-success mb-3" x-text="'R$ ' + product.price.toFixed(2)"></p>
+              <button class="btn btn-success mt-auto" @click="addToCart(product)" aria-label="Adicionar ao carrinho">
+                <i class="fa fa-cart-plus" aria-hidden="true"></i> Adicionar ao Carrinho
+              </button>
+            </div>
           </div>
-        </div>
-      </article>
-      <!-- Adicione mais cards de produtos conforme desejar -->
-      <article class="col-12 col-sm-6 col-md-4 col-lg-3" role="article" aria-label="Produto Whisky Escocês 12 anos">
-        <div class="card shadow h-100">
-          <img src="produtos/whisky1.jpg" class="card-img-top" alt="Whisky Escocês 12 anos" loading="lazy" />
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title">Whisky Escocês 12 anos</h5>
-            <p class="card-text mb-1">750ml</p>
-            <p class="card-text text-muted mb-2"><i class="fa fa-globe" aria-hidden="true"></i> Escócia</p>
-            <p class="card-text fw-bold text-success mb-3">R$ 199,90</p>
-<a href="https://wa.me/SEUNUMERO?text=Tenho%20interesse%20no%20Whisky%20Escocês%2012%20anos" target="_blank" rel="noopener" class="btn btn-success mt-auto" aria-label="Comprar Whisky Escocês 12 anos pelo WhatsApp">
-              <i class="fab fa-whatsapp" aria-hidden="true"></i> Comprar pelo WhatsApp
-            </a>
-          </div>
-        </div>
-      </article>
+        </article>
+      </template>
     </section>
+
+    <!-- Carrinho -->
+    <aside class="cart bg-white shadow rounded p-3 mt-4" style="max-width: 400px; position: fixed; top: 80px; right: 20px; z-index: 1050;" aria-label="Carrinho de compras" x-show="cart.length > 0" x-transition>
+      <h3 class="mb-3">Carrinho</h3>
+      <ul class="list-group mb-3">
+        <template x-for="(item, index) in cart" :key="item.id">
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span x-text="item.name"></span>
+            <span>R$ <span x-text="item.price.toFixed(2)"></span></span>
+            <button class="btn btn-sm btn-danger ms-2" @click="removeFromCart(index)" aria-label="Remover item do carrinho">&times;</button>
+          </li>
+        </template>
+      </ul>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <strong>Total:</strong>
+        <span>R$ <span x-text="totalPrice().toFixed(2)"></span></span>
+      </div>
+      <button class="btn btn-primary w-100" @click="checkout()" aria-label="Finalizar compra">Finalizar Compra</button>
+    </aside>
   </main>
 
   <footer class="bg-dark text-white text-center py-3 mt-5" role="contentinfo">
@@ -153,5 +162,95 @@
 
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    function cartApp() {
+      return {
+        tipoFilter: '',
+        paisFilter: '',
+        precoFilter: '',
+        products: [
+          { id: 1, name: 'Vinho Tinto Argentino', description: 'Malbec Reserva 750ml', origin: 'Argentina', price: 89.90, image: 'produtos/vinho1.jpg', alt: 'Vinho Tinto Argentino', tipo: 'Vinho' },
+          { id: 2, name: 'Whisky Escocês 12 anos', description: '750ml', origin: 'Escócia', price: 199.90, image: 'produtos/whisky1.jpg', alt: 'Whisky Escocês 12 anos', tipo: 'Whisky' },
+          { id: 3, name: 'Cerveja Alemã', description: '500ml', origin: 'Alemanha', price: 12.50, image: 'produtos/cerveja1.jpg', alt: 'Cerveja Alemã', tipo: 'Cerveja' },
+          { id: 4, name: 'Vodka Russa', description: '1L', origin: 'Rússia', price: 75.00, image: 'produtos/vodka1.jpg', alt: 'Vodka Russa', tipo: 'Vodka' },
+          { id: 5, name: 'Vinho Branco Francês', description: 'Chardonnay 750ml', origin: 'França', price: 120.00, image: 'produtos/vinho2.jpg', alt: 'Vinho Branco Francês', tipo: 'Vinho' },
+          { id: 6, name: 'Whisky Americano 8 anos', description: '750ml', origin: 'Estados Unidos', price: 150.00, image: 'produtos/whisky2.jpg', alt: 'Whisky Americano 8 anos', tipo: 'Whisky' },
+          { id: 7, name: 'Cerveja Belga', description: '330ml', origin: 'Bélgica', price: 18.75, image: 'produtos/cerveja2.jpg', alt: 'Cerveja Belga', tipo: 'Cerveja' },
+          { id: 8, name: 'Vinho Rosé Chileno', description: '750ml', origin: 'Chile', price: 95.00, image: 'produtos/vinho3.jpg', alt: 'Vinho Rosé Chileno', tipo: 'Vinho' },
+          { id: 9, name: 'Whisky Irlandês 10 anos', description: '700ml', origin: 'Irlanda', price: 180.00, image: 'produtos/whisky3.jpg', alt: 'Whisky Irlandês 10 anos', tipo: 'Whisky' },
+          { id: 10, name: 'Cerveja Artesanal Brasileira', description: '600ml', origin: 'Brasil', price: 22.00, image: 'produtos/cerveja3.jpg', alt: 'Cerveja Artesanal Brasileira', tipo: 'Cerveja' },
+          { id: 11, name: 'Vodka Polonesa', description: '750ml', origin: 'Polônia', price: 65.00, image: 'produtos/vodka2.jpg', alt: 'Vodka Polonesa', tipo: 'Vodka' },
+          { id: 12, name: 'Vinho Tinto Italiano', description: 'Sangiovese 750ml', origin: 'Itália', price: 110.00, image: 'produtos/vinho4.jpg', alt: 'Vinho Tinto Italiano', tipo: 'Vinho' },
+          { id: 13, name: 'Whisky Canadense 12 anos', description: '750ml', origin: 'Canadá', price: 160.00, image: 'produtos/whisky4.jpg', alt: 'Whisky Canadense 12 anos', tipo: 'Whisky' },
+          { id: 14, name: 'Cerveja Inglesa', description: '500ml', origin: 'Inglaterra', price: 15.00, image: 'produtos/cerveja4.jpg', alt: 'Cerveja Inglesa', tipo: 'Cerveja' },
+          { id: 15, name: 'Vodka Sueca', description: '1L', origin: 'Suécia', price: 70.00, image: 'produtos/vodka3.jpg', alt: 'Vodka Sueca', tipo: 'Vodka' }
+        ],
+        cart: [],
+        loadCart() {
+          const savedCart = localStorage.getItem('bebidasShopCart');
+          if (savedCart) {
+            this.cart = JSON.parse(savedCart);
+          }
+        },
+        saveCart() {
+          localStorage.setItem('bebidasShopCart', JSON.stringify(this.cart));
+        },
+        addToCart(product) {
+          this.cart.push(product);
+          this.saveCart();
+        },
+        removeFromCart(index) {
+          this.cart.splice(index, 1);
+          this.saveCart();
+        },
+        totalPrice() {
+          return this.cart.reduce((sum, item) => sum + item.price, 0);
+        },
+        filteredProducts() {
+          return this.products.filter(product => {
+            const tipoMatch = this.tipoFilter === '' || product.tipo === this.tipoFilter;
+            const paisMatch = this.paisFilter === '' || product.origin === this.paisFilter;
+            let precoMatch = true;
+            if (this.precoFilter !== '') {
+              const preco = product.price;
+              switch (this.precoFilter) {
+                case 'Até R$ 50':
+                  precoMatch = preco <= 50;
+                  break;
+                case 'R$ 51 a R$ 150':
+                  precoMatch = preco > 50 && preco <= 150;
+                  break;
+                case 'R$ 151 a R$ 300':
+                  precoMatch = preco > 150 && preco <= 300;
+                  break;
+                case 'Acima de R$ 300':
+                  precoMatch = preco > 300;
+                  break;
+              }
+            }
+            return tipoMatch && paisMatch && precoMatch;
+          });
+        },
+        checkout() {
+          if (this.cart.length === 0) {
+            alert('Seu carrinho está vazio.');
+            return;
+          }
+          const clientNumber = 'SEUNUMERO'; // Substitua pelo número do WhatsApp do seu cliente, no formato internacional sem '+'
+          let message = 'Novo pedido:%0A';
+          this.cart.forEach((item, index) => {
+            message += `${index + 1}. ${item.name} - R$ ${item.price.toFixed(2)}%0A`;
+          });
+          message += `Total: R$ ${this.totalPrice().toFixed(2)}`;
+          const whatsappUrl = `https://wa.me/${clientNumber}?text=${message}`;
+          alert('Seu pedido está sendo processado. Você receberá uma confirmação em breve.');
+          window.open(whatsappUrl, '_blank');
+          this.cart = [];
+          this.saveCart();
+        }
+      }
+    }
+  </script>
 </body>
 </html>
